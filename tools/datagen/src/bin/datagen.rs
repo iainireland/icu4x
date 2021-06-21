@@ -287,6 +287,9 @@ fn main() -> anyhow::Result<()> {
 
     export_cldr(cldr_paths.as_ref(), &mut exporter)?;
 
+    // TODO:
+    // export_uprops(...)?;
+
     Ok(())
 }
 
@@ -307,3 +310,20 @@ fn export_cldr(
 
     Ok(())
 }
+
+/*
+fn export_uprops(uprops_path, exporter) {
+    let keys = get_all_uprops_keys();
+
+    let provider = BinaryPropertyDataProvider::new(uprops_path);
+    for key in keys.iter() {
+        log::info!("Writing key: {}", key);
+        let result = exporter.put_key_from_provider(key, &provider);
+        // Ensure flush() is called, even when the result is an error
+        exporter.flush()?;
+        result?;
+    }
+
+    Ok(())
+}
+*/

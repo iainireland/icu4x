@@ -665,7 +665,7 @@ pub struct UnicodePropertyV1<'s> {
 icu_provider::unsafe_impl_data_marker_with_lifetime!(
     UnicodePropertyV1<'s>,
     /// Marker type for [`UnicodeProperty`]
-    UnicodePropertyMarker,
+    UnicodePropertyV1Marker,
     TEMP_ZCF
 );
 
