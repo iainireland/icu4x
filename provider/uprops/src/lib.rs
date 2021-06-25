@@ -4,6 +4,5 @@
 
 mod binary;
 mod upropdump_serde;
-mod reader;
 
 pub use binary::BinaryPropertiesDataProvider;

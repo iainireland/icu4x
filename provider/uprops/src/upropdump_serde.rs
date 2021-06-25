@@ -5,10 +5,10 @@
 pub mod binary {
     #[derive(serde::Deserialize)]
     pub struct BinaryProperty {
-        long_name: String,
-        name: String,
-        serialized: Vec<u32>,
-        ranges: Vec<(u32, u32)>,
+        pub long_name: String,
+        pub name: String,
+        pub serialized: Vec<u32>,
+        pub ranges: Vec<(u32, u32)>,
     }
 
     #[derive(serde::Deserialize)]
