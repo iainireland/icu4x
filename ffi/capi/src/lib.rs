@@ -14,6 +14,7 @@ pub mod locale;
 pub mod locale_canonicalizer;
 pub mod pluralrules;
 pub mod provider;
+pub mod uniset;
 
 #[cfg(target_arch = "wasm32")]
 mod wasm_glue;

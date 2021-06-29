@@ -866,6 +866,9 @@ dependencies = [
  "icu_provider",
  "icu_provider_fs",
  "icu_provider_static",
+ "icu_provider_uprops",
+ "icu_testdata",
+ "icu_uniset",
  "log",
  "writeable",
 ]
