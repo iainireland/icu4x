@@ -11,16 +11,42 @@ More details on each tool can be found by running `--help`.
 
 ## Examples
 
-Generate ICU4X JSON:
+Generate ICU4X JSON file tree:
 
 ```bash
 # Run from the icu4x project folder
 $ cargo run --bin icu4x-datagen -- \
-    --cldr-tag 39.0.0 \
-    --all-keys \
-    --all-locales \
-    --out /tmp/icu4x_data \
-    -v
+   --cldr-tag 39.0.0 \
+   --all-keys \
+   --all-locales \
+   --out /tmp/icu4x_data/json \
+   -v
+```
+
+Generate ICU4X Bincode blob (single file):
+
+```bash
+# Run from the icu4x project folder
+$ cargo run --bin icu4x-datagen -- \
+   --cldr-tag 39.0.0 \
+   --all-keys \
+   --all-locales \
+   --format blob \
+   --out /tmp/icu4x_data/icu4x_data.bincode \
+   -v
+```
+
+Generate ICU4X Bincode file tree:
+
+```bash
+# Run from the icu4x project folder
+$ cargo run --bin icu4x-datagen -- \
+   --cldr-tag 39.0.0 \
+   --all-keys \
+   --all-locales \
+   --syntax bincode \
+   --out /tmp/icu4x_data/bincode \
+   -v
 ```
 
 ## More Information

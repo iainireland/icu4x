@@ -855,6 +855,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "icu_calendar"
+version = "0.2.0"
+
+[[package]]
 name = "icu_capi"
 version = "0.1.0"
 dependencies = [
@@ -865,11 +869,11 @@ dependencies = [
  "icu_plurals",
  "icu_provider",
  "icu_provider_fs",
- "icu_provider_static",
  "icu_provider_uprops",
  "icu_testdata",
  "icu_uniset",
  "log",
+ "tinystr",
  "writeable",
 ]
 
@@ -882,6 +886,7 @@ dependencies = [
  "futures",
  "icu_locid",
  "icu_provider",
+ "icu_provider_blob",
  "icu_provider_cldr",
  "icu_provider_fs",
  "icu_testdata",
@@ -930,7 +935,6 @@ dependencies = [
  "rand_distr",
  "rand_pcg",
  "serde",
- "smallstr",
  "thiserror",
  "writeable",
 ]
@@ -1017,6 +1021,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "icu_provider_blob"
+version = "0.2.0"
+dependencies = [
+ "bincode",
+ "erased-serde",
+ "icu",
+ "icu_locid",
+ "icu_locid_macros",
+ "icu_provider",
+ "icu_testdata",
+ "litemap",
+ "log",
+ "serde",
+]
+
+[[package]]
 name = "icu_provider_cldr"
 version = "0.2.0"
 dependencies = [
@@ -1079,20 +1099,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "icu_provider_static"
-version = "0.2.0"
-dependencies = [
- "bincode",
- "erased-serde",
- "icu",
- "icu_locid",
- "icu_provider",
- "litemap",
- "serde",
- "serde_json",
-]
-
-[[package]]
 name = "icu_provider_uprops"
 version = "0.2.0"
 dependencies = [
@@ -1136,6 +1142,7 @@ dependencies = [
  "icu_locid_macros",
  "icu_plurals",
  "icu_provider",
+ "icu_provider_blob",
  "icu_provider_fs",
  "serde",
  "serde_json",
@@ -2561,7 +2568,7 @@ dependencies = [
 
 [[package]]
 name = "yoke"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "bincode",
  "serde",

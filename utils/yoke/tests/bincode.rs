@@ -40,13 +40,17 @@ unsafe impl<'a> Yokeable<'a> for Bar<'static> {
         self
     }
 
+    fn transform_owned(self) -> Bar<'a> {
+        self
+    }
+
     unsafe fn make(from: Bar<'a>) -> Self {
         let ret = mem::transmute_copy(&from);
         mem::forget(from);
         ret
     }
 
-    fn with_mut<F>(&'a mut self, f: F)
+    fn transform_mut<F>(&'a mut self, f: F)
     where
         F: 'static + FnOnce(&'a mut Self::Output),
     {

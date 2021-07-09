@@ -13,6 +13,7 @@
 // them out is good even when redundant
 #![allow(clippy::needless_lifetimes)]
 
+pub mod trait_hack;
 mod yoke;
 mod yokeable;
 mod zero_copy_from;
@@ -20,6 +21,6 @@ mod zero_copy_from;
 #[cfg(feature = "serde")]
 mod serde;
 
-pub use crate::yoke::Yoke;
+pub use crate::yoke::{CloneableCart, Yoke};
 pub use crate::yokeable::Yokeable;
 pub use crate::zero_copy_from::ZeroCopyFrom;

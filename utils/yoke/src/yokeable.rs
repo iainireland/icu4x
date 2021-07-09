@@ -29,6 +29,12 @@ use std::{mem, ptr};
 ///
 /// There are further constraints on implementation safety on individual methods.
 ///
+/// # Trait bounds
+///
+/// [Compiler bug #85636](https://github.com/rust-lang/rust/issues/85636) makes it tricky to add
+/// trait bounds on `Yokeable::Output`. For more information and for workarounds, see
+/// [`crate::trait_hack`].
+///
 /// # Implementation example
 ///
 /// This crate will eventually expose a custom derive that makes it possible to implement this
@@ -53,6 +59,11 @@ use std::{mem, ptr};
 ///         self
 ///     }
 ///
+///     fn transform_owned(self) -> Bar<'a> {
+///         // covariant lifetime cast, can be done safely
+///         self
+///     }
+///
 ///     unsafe fn make(from: Bar<'a>) -> Self {
 ///         // We're just doing mem::transmute() here, however Rust is
 ///         // not smart enough to realize that Bar<'a> and Bar<'static> are of
@@ -66,7 +77,7 @@ use std::{mem, ptr};
 ///         ptr::read(ptr)
 ///     }
 ///
-///     fn with_mut<F>(&'a mut self, f: F)
+///     fn transform_mut<F>(&'a mut self, f: F)
 ///     where
 ///         F: 'static + FnOnce(&'a mut Self::Output),
 ///     {
@@ -86,6 +97,15 @@ pub unsafe trait Yokeable<'a>: 'static {
     /// should simply be `{ self }`, though it's acceptable to include additional assertions
     /// if desired.
     fn transform(&'a self) -> &'a Self::Output;
+
+    /// This method must cast `self` between `Self<'static>` and `Self<'a>`.
+    ///
+    /// # Implementation safety
+    ///
+    /// If the invariants of [`Yokeable`] are being satisfied, the body of this method
+    /// should simply be `{ self }`, though it's acceptable to include additional assertions
+    /// if desired.
+    fn transform_owned(self) -> Self::Output;
 
     /// This method can be used to cast away `Self<'a>`'s lifetime.
     ///
@@ -126,11 +146,11 @@ pub unsafe trait Yokeable<'a>: 'static {
     ///
     /// fn unsound<'a>(foo: &'a mut Foo) {
     ///     let a: &str = &foo.str;
-    ///     foo.cow.with_mut(|cow| *cow = Cow::Borrowed(a));
+    ///     foo.cow.transform_mut(|cow| *cow = Cow::Borrowed(a));
     /// }
     /// ```
     ///
-    /// However, this code will not compile because [`Yokeable::with_mut()`] requires `F: 'static`.
+    /// However, this code will not compile because [`Yokeable::transform_mut()`] requires `F: 'static`.
     /// This enforces that while `F` may mutate `Self<'a>`, it can only mutate it in a way that does
     /// not insert additional references. For example, `F` may call `to_owned()` on a `Cow` and mutate it,
     /// but it cannot insert a new _borrowed_ reference because it has nowhere to borrow _from_ --
@@ -151,12 +171,17 @@ pub unsafe trait Yokeable<'a>: 'static {
     /// }
     ///
     /// fn unsound<'a>(bar: &'a mut Bar<'static>) {
-    ///     bar.with_mut(move |bar| bar.cow = Cow::Borrowed(&bar.num));
+    ///     bar.transform_mut(move |bar| bar.cow = Cow::Borrowed(&bar.num));
     /// }
     /// #
     /// # unsafe impl<'a> Yokeable<'a> for Bar<'static> {
     /// #     type Output = Bar<'a>;
     /// #     fn transform(&'a self) -> &'a Bar<'a> {
+    /// #         self
+    /// #     }
+    /// #
+    /// #     fn transform_owned(self) -> Bar<'a> {
+    /// #         // covariant lifetime cast, can be done safely
     /// #         self
     /// #     }
     /// #
@@ -166,7 +191,7 @@ pub unsafe trait Yokeable<'a>: 'static {
     /// #         ret
     /// #     }
     /// #
-    /// #     fn with_mut<F>(&'a mut self, f: F)
+    /// #     fn transform_mut<F>(&'a mut self, f: F)
     /// #     where
     /// #         F: 'static + FnOnce(&'a mut Self::Output),
     /// #     {
@@ -193,10 +218,10 @@ pub unsafe trait Yokeable<'a>: 'static {
     /// }
     ///
     /// fn sound<'a>(foo: &'a mut Foo) {
-    ///     foo.cow.with_mut(move |cow| cow.to_mut().push('a'));
+    ///     foo.cow.transform_mut(move |cow| cow.to_mut().push('a'));
     /// }
     /// ```
-    fn with_mut<F>(&'a mut self, f: F)
+    fn transform_mut<F>(&'a mut self, f: F)
     where
         // be VERY CAREFUL changing this signature, it is very nuanced (see above)
         F: 'static + for<'b> FnOnce(&'b mut Self::Output);
@@ -212,6 +237,11 @@ where
         self
     }
 
+    fn transform_owned(self) -> Cow<'a, T> {
+        // Doesn't need unsafe: `'a` is covariant so this lifetime cast is always safe
+        self
+    }
+
     unsafe fn make(from: Cow<'a, T>) -> Self {
         // i hate this
         // unfortunately Rust doesn't think `mem::transmute` is possible since it's not sure the sizes
@@ -222,7 +252,7 @@ where
         ptr::read(ptr)
     }
 
-    fn with_mut<F>(&'a mut self, f: F)
+    fn transform_mut<F>(&'a mut self, f: F)
     where
         F: 'static + for<'b> FnOnce(&'b mut Self::Output),
     {
@@ -238,11 +268,16 @@ unsafe impl<'a, T: 'static + ?Sized> Yokeable<'a> for &'static T {
         self
     }
 
+    fn transform_owned(self) -> &'a T {
+        // Doesn't need unsafe: `'a` is covariant so this lifetime cast is always safe
+        self
+    }
+
     unsafe fn make(from: &'a T) -> Self {
         mem::transmute(from)
     }
 
-    fn with_mut<F>(&'a mut self, f: F)
+    fn transform_mut<F>(&'a mut self, f: F)
     where
         F: 'static + for<'b> FnOnce(&'b mut Self::Output),
     {
