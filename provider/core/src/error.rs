@@ -36,6 +36,10 @@ pub enum Error {
     #[error("Payload is missing")]
     MissingPayload,
 
+    #[error("Payload is invalid")]
+    InvalidPayload,
+
+    /// The payload is invalid. This error is usually unexpected.
     /// The TypeID of the payload does not match the expected TypeID.
     #[error("Mismatched type: payload is {actual:?} (expected from generic type paramenter: {generic:?})")]
     MismatchedType {

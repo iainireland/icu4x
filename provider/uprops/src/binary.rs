@@ -7,7 +7,6 @@ use std::path::PathBuf;
 use icu_provider::prelude::*;
 use icu_uniset::provider::*;
 use std::fs;
-use eyre::Context;
 use crate::upropdump_serde;
 use icu_uniset::UnicodeSetBuilder;
 
@@ -19,11 +18,11 @@ impl BinaryPropertiesDataProvider {
     pub fn new(root_dir: PathBuf) -> Self {
         BinaryPropertiesDataProvider { root_dir }
     }
-    fn get_toml_as_string(&self, name: &str) -> eyre::Result<String> {
+    fn get_toml_as_string(&self, name: &str) -> Result<String, DataError> {
         let mut path: PathBuf = self.root_dir.clone().join(name);
         path.set_extension("toml");
         fs::read_to_string(&path)
-            .with_context(|| format!("Could not open file: {:?}", &path))
+            .map_err(DataError::new_resc_error)
     }
 }
 
@@ -32,15 +31,13 @@ impl<'d, 's> DataProvider<'d, 's, UnicodePropertyV1Marker> for BinaryPropertiesD
         &self,
         req: &DataRequest,
     ) -> Result<DataResponse<'d, 's, UnicodePropertyV1Marker>, DataError> {
-        // TODO: proper error handling
-        let toml_str: String = self.get_toml_as_string(&req.resource_path.key.sub_category)
-            .unwrap();
+        let toml_str: String = self.get_toml_as_string(&req.resource_path.key.sub_category)?;
         let toml_data: upropdump_serde::binary::Main = toml::from_str(&toml_str)
-            .unwrap();
+            .map_err(DataError::new_resc_error)?;
         let mut builder = UnicodeSetBuilder::new();
         for (start,end) in toml_data.unicode_set.data.ranges {
-            let start = std::char::from_u32(start).unwrap();
-            let end = std::char::from_u32(end + 1).unwrap();
+            let start = std::char::from_u32(start).ok_or(DataError::InvalidPayload)?;
+            let end = std::char::from_u32(end + 1).ok_or(DataError::InvalidPayload)?;
             builder.add_range(&(start..end));
         }
         let uniset = builder.build();
