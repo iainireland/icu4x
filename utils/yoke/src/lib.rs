@@ -9,10 +9,15 @@
 //!
 //! See the documentation of [`Yoke`] for more details.
 
+#![cfg_attr(not(test), no_std)]
 // The lifetimes here are important for safety and explicitly writing
 // them out is good even when redundant
 #![allow(clippy::needless_lifetimes)]
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
+mod macro_impls;
 pub mod trait_hack;
 mod yoke;
 mod yokeable;
@@ -20,6 +25,9 @@ mod zero_copy_from;
 
 #[cfg(feature = "serde")]
 mod serde;
+
+#[cfg(feature = "derive")]
+pub use yoke_derive::{Yokeable, ZeroCopyFrom};
 
 pub use crate::yoke::{CloneableCart, Yoke};
 pub use crate::yokeable::Yokeable;

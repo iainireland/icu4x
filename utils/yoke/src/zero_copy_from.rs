@@ -4,8 +4,14 @@
 
 use crate::Yoke;
 use crate::Yokeable;
-use std::borrow::Cow;
-use std::rc::Rc;
+#[cfg(feature = "alloc")]
+use alloc::borrow::{Cow, ToOwned};
+#[cfg(feature = "alloc")]
+use alloc::boxed::Box;
+#[cfg(feature = "alloc")]
+use alloc::rc::Rc;
+#[cfg(feature = "alloc")]
+use alloc::string::String;
 
 /// Trait for types that can be crated from a reference to a cart type `C` with no allocations.
 ///
@@ -105,6 +111,7 @@ impl<'b, 's, Y: ZeroCopyFrom<C> + for<'a> Yokeable<'a>, C: ?Sized> Yoke<Y, &'b C
     }
 }
 
+#[cfg(feature = "alloc")]
 impl<'b, 's, Y: ZeroCopyFrom<C> + for<'a> Yokeable<'a>, C: ?Sized> Yoke<Y, Box<C>> {
     /// Construct a [`Yoke`]`<Y, Box<C>>` from a boxed cart by zero-copy cloning the cart to `Y` and
     /// then yokeing that object to the cart.
@@ -134,6 +141,7 @@ impl<'b, 's, Y: ZeroCopyFrom<C> + for<'a> Yokeable<'a>, C: ?Sized> Yoke<Y, Box<C
     }
 }
 
+#[cfg(feature = "alloc")]
 impl<'b, 's, Y: ZeroCopyFrom<C> + for<'a> Yokeable<'a>, C: ?Sized> Yoke<Y, Rc<C>> {
     /// Construct a [`Yoke`]`<Y, Rc<C>>` from a reference-counted cart by zero-copy cloning the
     /// cart to `Y` and then yokeing that object to the cart.
@@ -169,12 +177,14 @@ impl<'b, 's, Y: ZeroCopyFrom<C> + for<'a> Yokeable<'a>, C: ?Sized> Yoke<Y, Rc<C>
 // to customize their `ZeroCopyFrom` impl. The blanket implementation may be safe once Rust has
 // specialization.
 
+#[cfg(feature = "alloc")]
 impl ZeroCopyFrom<str> for Cow<'static, str> {
     fn zero_copy_from<'b>(cart: &'b str) -> Cow<'b, str> {
         Cow::Borrowed(cart)
     }
 }
 
+#[cfg(feature = "alloc")]
 impl ZeroCopyFrom<String> for Cow<'static, str> {
     fn zero_copy_from<'b>(cart: &'b String) -> Cow<'b, str> {
         Cow::Borrowed(cart)
@@ -187,8 +197,46 @@ impl ZeroCopyFrom<str> for &'static str {
     }
 }
 
+#[cfg(feature = "alloc")]
 impl ZeroCopyFrom<String> for &'static str {
     fn zero_copy_from<'b>(cart: &'b String) -> &'b str {
+        cart
+    }
+}
+
+impl<C, T: ZeroCopyFrom<C>> ZeroCopyFrom<Option<C>> for Option<T> {
+    fn zero_copy_from<'b>(cart: &'b Option<C>) -> Option<<T as Yokeable<'b>>::Output> {
+        cart.as_ref()
+            .map(|c| <T as ZeroCopyFrom<C>>::zero_copy_from(c))
+    }
+}
+
+impl<C1, T1: ZeroCopyFrom<C1>, C2, T2: ZeroCopyFrom<C2>> ZeroCopyFrom<(C1, C2)> for (T1, T2) {
+    fn zero_copy_from<'b>(
+        cart: &'b (C1, C2),
+    ) -> (<T1 as Yokeable<'b>>::Output, <T2 as Yokeable<'b>>::Output) {
+        (
+            <T1 as ZeroCopyFrom<C1>>::zero_copy_from(&cart.0),
+            <T2 as ZeroCopyFrom<C2>>::zero_copy_from(&cart.1),
+        )
+    }
+}
+
+// These duplicate the functionality from above and aren't quite necessary due
+// to deref coercions, however for the custom derive to work, there always needs
+// to be `impl ZCF<T> for T`, otherwise it may fail to perform the necessary
+// type inference. Deref coercions do not typically work when sufficient generics
+// or inference are involved, and the proc macro does not necessarily have
+// enough type information to figure this out on its own.
+#[cfg(feature = "alloc")]
+impl<B: ToOwned + ?Sized + 'static> ZeroCopyFrom<Cow<'_, B>> for Cow<'static, B> {
+    fn zero_copy_from<'b>(cart: &'b Cow<'_, B>) -> Cow<'b, B> {
+        Cow::Borrowed(cart)
+    }
+}
+
+impl ZeroCopyFrom<&'_ str> for &'static str {
+    fn zero_copy_from<'b>(cart: &'b &'_ str) -> &'b str {
         cart
     }
 }

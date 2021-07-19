@@ -126,7 +126,8 @@ fn test_ppucd_provider_parse() {
             },
         },
     };
-    let resp: DataResponse<UnicodePropertyV1Marker> = ppucd_provider.load_payload(&data_req).unwrap();
+    let resp: DataResponse<UnicodePropertyV1Marker> =
+        ppucd_provider.load_payload(&data_req).unwrap();
 
     let ppucd_property_cow: DataPayload<UnicodePropertyV1Marker> = resp.take_payload().unwrap();
     let exp_prop_uniset: UnicodePropertyV1 = UnicodePropertyV1 {

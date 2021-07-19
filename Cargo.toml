@@ -3,7 +3,7 @@
 # (online at: https://github.com/unicode-org/icu4x/blob/main/LICENSE ).
 
 [workspace]
-
+resolver = "2"
 members = [
     "components/datetime",
     "components/decimal",
@@ -25,6 +25,7 @@ members = [
     "provider/cldr",
     "provider/core",
     "provider/fs",
+    "provider/macros",
     "provider/testdata",
     "provider/uprops",
     "tools/benchmark/macros",
@@ -35,6 +36,7 @@ members = [
     "utils/pattern",
     "utils/writeable",
     "utils/yoke",
+    "utils/yoke/derive",
     "utils/zerovec",
 ]
 
