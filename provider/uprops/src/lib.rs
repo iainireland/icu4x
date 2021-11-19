@@ -26,6 +26,9 @@ mod script;
 mod uprops_helpers;
 mod uprops_serde;
 
+#[cfg(feature = "casemap")]
+mod casemap;
+
 pub use enum_codepointtrie::EnumeratedPropertyCodePointTrieProvider;
 pub use provider::PropertiesDataProvider;
 pub use script::ScriptExtensionsPropertyProvider;
