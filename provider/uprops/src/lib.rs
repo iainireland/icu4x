@@ -27,7 +27,7 @@ mod uprops_helpers;
 mod uprops_serde;
 
 #[cfg(feature = "casemapping")]
-mod casemapping;
+pub mod casemapping;
 
 pub use enum_codepointtrie::EnumeratedPropertyCodePointTrieProvider;
 pub use provider::PropertiesDataProvider;
