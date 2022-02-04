@@ -1092,6 +1092,7 @@ version = "0.1.0"
 dependencies = [
  "displaydoc",
  "icu_codepointtrie",
+ "icu_locid",
  "icu_provider",
  "icu_uniset",
  "serde",
@@ -1409,6 +1410,7 @@ dependencies = [
  "eyre",
  "icu_casemapping",
  "icu_codepointtrie",
+ "icu_locid",
  "icu_properties",
  "icu_provider",
  "icu_testdata",
