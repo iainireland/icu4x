@@ -26,3 +26,6 @@ pub use casemapping::CaseMapping;
 pub use error::Error as CaseMappingError;
 #[cfg(feature = "provider_transform_internals")]
 pub use internals::CaseMappingInternals;
+
+mod exceptions_new;
+mod minimal;
